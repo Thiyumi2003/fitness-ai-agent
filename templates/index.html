@@ -25,6 +25,27 @@
         <section class="profile">
             <h3>Your Profile</h3>
             <p id="profile-summary">No info yet — start a chat to create a plan.</p>
+            <details id="profile-form-details" open>
+                <summary style="margin-top:10px;cursor:pointer">Fill profile (quick)</summary>
+                <form id="profile-form" onsubmit="event.preventDefault(); submitProfile()" style="margin-top:8px">
+                    <label>Goal<br><input name="goal" id="f-goal" placeholder="Weight Loss / Gain" required></label><br>
+                    <label>Gender<br><input name="gender" id="f-gender" placeholder="Male/Female" required></label><br>
+                    <label>Weight (kg)<br><input type="number" step="any" name="weight" id="f-weight" required></label><br>
+                    <label>Height (m)<br><input type="number" step="any" name="height" id="f-height" required></label><br>
+                    <label>Age<br><input type="number" name="age" id="f-age" required></label><br>
+                    <label>Hypertension<br><input name="hypertension" id="f-hypertension" placeholder="Yes/No" required></label><br>
+                    <label>Diabetes<br><input name="diabetes" id="f-diabetes" placeholder="Yes/No" required></label><br>
+                    <label>Fitness Type<br><input name="fitness_type" id="f-fitness_type" placeholder="Cardio / Muscular"></label><br>
+                    <label>Choice<br>
+                        <select id="f-choice" name="choice">
+                            <option value="exercise">Exercise</option>
+                            <option value="diet">Diet</option>
+                        </select>
+                    </label>
+                    <label style="display:block;margin-top:8px"><input type="checkbox" id="f-ml"/> Include ML recommendation</label>
+                    <div style="margin-top:8px"><button type="submit">Get Recommendation</button></div>
+                </form>
+            </details>
         </section>
 
         <section class="options">
@@ -82,6 +103,31 @@ document.getElementById('send-btn').addEventListener('click', send);
 document.getElementById('user-input').addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
 function startWeightLoss(){ document.getElementById('user-input').value='I want to lose weight'; send(); }
 function startMuscleGain(){ document.getElementById('user-input').value='I want to gain muscle'; send(); }
+
+async function submitProfile(){
+    const payload = {
+        goal: document.getElementById('f-goal').value,
+        gender: document.getElementById('f-gender').value,
+        weight: parseFloat(document.getElementById('f-weight').value),
+        height: parseFloat(document.getElementById('f-height').value),
+        age: parseInt(document.getElementById('f-age').value,10),
+        hypertension: document.getElementById('f-hypertension').value,
+        diabetes: document.getElementById('f-diabetes').value,
+        fitness_type: document.getElementById('f-fitness_type').value,
+        choice: document.getElementById('f-choice').value,
+        include_ml: document.getElementById('f-ml').checked
+    };
+
+    appendMessage(true, 'Submitting profile...');
+    try{
+        const res = await fetch('/profile', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        const data = await res.json();
+        appendMessage(false, data.bmi_message + '\n\n' + data.plan + (data.ml_recommendation ? ('\n\n' + data.ml_recommendation) : ''));
+        updateProfileSummary();
+    }catch(err){
+        appendMessage(false, 'Error submitting profile.');
+    }
+}
 </script>
 
 </body>
