@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fitness AI Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Personalized exercise and diet plans">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="/static/images/logo.png">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container">
+        <div class="brand">
+            <img src="/static/images/logo.png" alt="Logo" class="logo">
+            <div class="brand-text"><h1>Fitness AI Agent</h1><p class="tag">Personalized exercise & diet plans</p></div>
+        </div>
+        <nav class="top-nav"><a href="#">Home</a><a href="#">Plans</a><a href="#">About</a></nav>
+    </div>
+</header>
+
+<main class="site-main">
+    <aside class="sidebar">
+        <section class="profile">
+            <h3>Your Profile</h3>
+            <p id="profile-summary">No info yet — start a chat to create a plan.</p>
+        </section>
+
+        <section class="options">
+            <h4>Quick Actions</h4>
+            <button onclick="startWeightLoss()">Start Weight Loss Flow</button>
+            <button onclick="startMuscleGain()">Start Muscle Gain Flow</button>
+        </section>
+    </aside>
+
+    <section class="chat-panel">
+        <div class="panel-head"><h2>Assistant</h2><p class="muted">Start a conversation to build your plan</p></div>
+        <div id="chat-box" class="chat-box" aria-live="polite"></div>
+
+        <div class="input-area">
+            <input id="user-input" placeholder="Type a message and press Enter" aria-label="Message input" />
+            <button id="send-btn" aria-label="Send message">Send</button>
+        </div>
+    </section>
+</main>
+
+<script>
+async function send(){
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if(!message) return;
+    appendMessage(true, message);
+    input.value='';
+
+    try{
+        const res = await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});
+        const data = await res.json();
+        appendMessage(false, data.reply);
+        updateProfileSummary();
+    }catch(e){
+        appendMessage(false,'Error: could not reach server.');
+    }
+}
+
+function appendMessage(isYou, text){
+    const box = document.getElementById('chat-box');
+    const el = document.createElement('div');
+    el.className = 'message ' + (isYou? 'you':'agent');
+    el.innerHTML = `<div class="body">${text.replace(/\n/g,'<br>')}</div>`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+}
+
+function updateProfileSummary(){
+    const box = document.getElementById('chat-box');
+    const items = Array.from(box.querySelectorAll('.message')).slice(-6).map(m=>m.textContent.trim());
+    document.getElementById('profile-summary').textContent = items.join(' | ');
+}
+
+document.getElementById('send-btn').addEventListener('click', send);
+document.getElementById('user-input').addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+function startWeightLoss(){ document.getElementById('user-input').value='I want to lose weight'; send(); }
+function startMuscleGain(){ document.getElementById('user-input').value='I want to gain muscle'; send(); }
+</script>
+
+</body>
+</html>
