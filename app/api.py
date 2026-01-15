@@ -6,8 +6,58 @@ from app.agent import FitnessAgent
 router = APIRouter()
 agent = FitnessAgent()
 
+# In-memory user store (demo only). Replace with a real DB for production.
+users_db = {}
+
+
+class SignupRequest(BaseModel):
+    name: str
+    gender: str
+    age: int
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+@router.post("/signup")
+def signup(req: SignupRequest):
+    if req.email in users_db:
+        return {"success": False, "message": "Email already exists"}
+
+    users_db[req.email] = {
+        "name": req.name,
+        "gender": req.gender,
+        "age": req.age,
+        "email": req.email,
+        "password": req.password,
+    }
+    return {"success": True, "message": "Account created successfully"}
+
+
+@router.post("/login")
+def login(req: LoginRequest):
+    user = users_db.get(req.email)
+    if not user or user["password"] != req.password:
+        return {"success": False, "message": "Invalid email or password"}
+
+    return {
+        "success": True,
+        "user": {
+            "name": user["name"],
+            "gender": user["gender"],
+            "age": user["age"],
+            "email": user["email"],
+        },
+    }
+
+
 class UserInput(BaseModel):
     message: str
+
 
 @router.post("/chat")
 def chat(user_input: UserInput):
@@ -24,13 +74,12 @@ class Profile(BaseModel):
     hypertension: str
     diabetes: str
     fitness_type: Optional[str] = None
-    choice: str  # 'exercise' or 'diet'
+    choice: str
     include_ml: Optional[bool] = False
 
 
 @router.post("/profile")
 def profile(profile: Profile):
-    # populate agent state from provided profile
     agent.state["goal"] = profile.goal
     agent.state["gender"] = profile.gender
     agent.state["weight"] = profile.weight
@@ -41,13 +90,11 @@ def profile(profile: Profile):
     agent.state["fitness_type"] = profile.fitness_type
     agent.state["choice"] = profile.choice
 
-    # compute BMI and category
     try:
         bmi_msg = agent.calculate_bmi()
     except Exception:
         bmi_msg = "BMI unavailable"
 
-    # dataset plan
     try:
         plan = agent.get_plan_from_dataset(profile.choice)
     except Exception:
@@ -56,7 +103,7 @@ def profile(profile: Profile):
     ml_rec = None
     if profile.include_ml:
         try:
-            if profile.choice.lower().startswith('ex'):
+            if profile.choice.lower().startswith("ex"):
                 ml_rec = agent.ml_exercise_recommendation()
             else:
                 ml_rec = agent.ml_diet_recommendation()

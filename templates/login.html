@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Fitness AI Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.12), transparent 25%),
+                  radial-gradient(circle at 80% 0%, rgba(45,212,191,0.10), transparent 28%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.08));
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    .card h1 { margin: 0 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    .card p { margin: 0 0 20px; color: var(--muted); }
+    label { display: block; margin-bottom: 14px; font-weight: 600; font-size: 14px; }
+    input {
+      width: 100%;
+      padding: 12px 12px 12px 44px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+    }
+    .field { position: relative; }
+    .field .icon {
+      position: absolute;
+      left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(99,102,241,0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      margin-top: 8px;
+    }
+    button:active { transform: translateY(1px); box-shadow: 0 8px 18px rgba(99,102,241,0.3); }
+    .footer { margin-top: 16px; text-align: center; color: var(--muted); font-size: 14px; }
+    .footer a { color: var(--text); font-weight: 700; text-decoration: none; }
+    .footer a:hover { color: var(--primary); }
+    .alert { display:none; padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+    .alert.error { background: rgba(239,68,68,0.12); color: #fecdd3; border: 1px solid rgba(239,68,68,0.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome back</h1>
+    <p>Login to your Fitness AI Agent</p>
+    <div id="error" class="alert error"></div>
+    <form onsubmit="event.preventDefault(); login();">
+      <label>Email</label>
+      <div class="field">
+        <span class="icon">📧</span>
+        <input id="email" type="email" placeholder="you@example.com" required>
+      </div>
+      <label>Password</label>
+      <div class="field">
+        <span class="icon">🔒</span>
+        <input id="password" type="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <div class="footer">No account? <a href="/signup">Create one</a></div>
+  </div>
+  <script>
+    async function login(){
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const err = document.getElementById('error');
+      err.style.display='none';
+      try{
+        const res = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password})});
+        const data = await res.json();
+        if(!data.success){
+          err.textContent = data.message || 'Login failed';
+          err.style.display='block';
+          return;
+        }
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/app';
+      }catch(e){
+        err.textContent = 'Unable to login right now';
+        err.style.display='block';
+      }
+    }
+  </script>
+</body>
+</html>

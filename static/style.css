@@ -1,10 +1,10 @@
 :root{
     --bg:#f6f7fb;
-    --accent:#26b07a;
-    --accent-2:#11806a;
+    --accent:#320b7a;
+    --accent-2:#0f172a;
     --muted:#7b8794;
     --card:#ffffff;
-    --primary:#0d6b4a;
+    --primary:#0f172a;
 }
 
 *{box-sizing:border-box}

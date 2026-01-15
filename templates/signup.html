@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | Fitness AI Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --error: #ef4444;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 20%, rgba(99,102,241,0.12), transparent 25%),
+                  radial-gradient(circle at 85% 0%, rgba(16,185,129,0.10), transparent 28%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.08));
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    .card h1 { margin: 0 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    .card p { margin: 0 0 20px; color: var(--muted); }
+    label { display: block; margin-bottom: 14px; font-weight: 600; font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 12px 12px 12px 44px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+    }
+    .field { position: relative; }
+    .field .icon {
+      position: absolute;
+      left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(99,102,241,0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      margin-top: 8px;
+    }
+    button:active { transform: translateY(1px); box-shadow: 0 8px 18px rgba(99,102,241,0.3); }
+    .footer { margin-top: 16px; text-align: center; color: var(--muted); font-size: 14px; }
+    .footer a { color: var(--text); font-weight: 700; text-decoration: none; }
+    .footer a:hover { color: var(--primary); }
+    .alert { display:none; padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+    .alert.error { background: rgba(239,68,68,0.12); color: #fecdd3; border: 1px solid rgba(239,68,68,0.4); }
+    .alert.success { background: rgba(16,185,129,0.12); color: #bbf7d0; border: 1px solid rgba(16,185,129,0.35); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Create account</h1>
+    <p>Join the Fitness AI Agent</p>
+    <div id="error" class="alert error"></div>
+    <div id="success" class="alert success"></div>
+    <form onsubmit="event.preventDefault(); signup();">
+      <label>Name</label>
+      <div class="field"><span class="icon">👤</span><input id="name" type="text" placeholder="Full name" required></div>
+      <label>Gender</label>
+      <div class="field"><span class="icon">⚧</span>
+        <select id="gender" required>
+          <option value="">Select gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+      <label>Age</label>
+      <div class="field"><span class="icon">🎂</span><input id="age" type="number" min="10" max="120" placeholder="Age" required></div>
+      <label>Email</label>
+      <div class="field"><span class="icon">📧</span><input id="email" type="email" placeholder="you@example.com" required></div>
+      <label>Password</label>
+      <div class="field"><span class="icon">🔒</span><input id="password" type="password" placeholder="Create password" minlength="6" required></div>
+      <label>Confirm Password</label>
+      <div class="field"><span class="icon">🔒</span><input id="confirm" type="password" placeholder="Confirm password" minlength="6" required></div>
+      <button type="submit">Create account</button>
+    </form>
+    <div class="footer">Already have an account? <a href="/login">Login</a></div>
+  </div>
+  <script>
+    async function signup(){
+      const name = document.getElementById('name').value.trim();
+      const gender = document.getElementById('gender').value;
+      const age = parseInt(document.getElementById('age').value, 10);
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const confirm = document.getElementById('confirm').value.trim();
+      const err = document.getElementById('error');
+      const ok = document.getElementById('success');
+      err.style.display='none';
+      ok.style.display='none';
+      if(password !== confirm){
+        err.textContent = 'Passwords do not match';
+        err.style.display='block';
+        return;
+      }
+      try{
+        const res = await fetch('/api/signup', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, gender, age, email, password})});
+        const data = await res.json();
+        if(!data.success){
+          err.textContent = data.message || 'Signup failed';
+          err.style.display='block';
+          return;
+        }
+        ok.textContent = 'Account created. Redirecting to login...';
+        ok.style.display='block';
+        setTimeout(()=>{ window.location.href='/login'; }, 1500);
+      }catch(e){
+        err.textContent = 'Unable to sign up right now';
+        err.style.display='block';
+      }
+    }
+  </script>
+</body>
+</html>
